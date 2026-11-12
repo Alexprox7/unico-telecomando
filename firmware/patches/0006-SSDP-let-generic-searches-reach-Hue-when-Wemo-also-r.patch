@@ -1,0 +1,31 @@
+From 5a9601e5e12996e2dbee487747789299c4ac6fe4 Mon Sep 17 00:00:00 2001
+From: Alexprox7 <Alexprox7@users.noreply.github.com>
+Date: Thu, 12 Nov 2026 17:04:03 +0100
+Subject: [PATCH 6/6] SSDP: let generic searches reach Hue when Wemo also runs
+
+Wemo answered ssdp:all / upnp:rootdevice and returned, so Echo never
+discovered the Hue bridge while both drivers were started.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ src/driver/drv_ssdp.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/src/driver/drv_ssdp.c b/src/driver/drv_ssdp.c
+index b4bbfe9..cd95126 100644
+--- a/src/driver/drv_ssdp.c
++++ b/src/driver/drv_ssdp.c
+@@ -532,7 +532,9 @@ void DRV_SSDP_RunQuickTick() {
+ 				|| strcasestr(udp_msgbuf, "ssdpsearch:all")
+ 				|| strcasestr(udp_msgbuf, "ssdp:all")) {
+ 				DRV_WEMO_Send_Advert_To(2, &addr);
+-				return;
++				// generic searches must also reach Hue, so Wemo and Hue can run together
++				if (!DRV_IsRunning("HUE"))
++					return;
+ 			}
+ 		}
+ #endif
+-- 
+2.54.0.windows.1
+

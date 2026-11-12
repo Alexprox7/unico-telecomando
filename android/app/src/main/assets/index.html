@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>IR Remote</title>
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--ink:#16191d;--mute:#6b7280;--line:#e5e7eb;--acc:#e8590c;--acc2:#fff1e8;--ok:#16a34a;--bad:#dc2626;--key:#f0f1f3}
+@media (prefers-color-scheme:dark){:root{--bg:#111418;--card:#1b1f25;--ink:#eef0f3;--mute:#9aa3ae;--line:#2a3038;--acc:#ff7a33;--acc2:#3a2416;--key:#252a31}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,-apple-system,Roboto,sans-serif}
+header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--bg)}
+header h1{flex:1;margin:0;font-size:22px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#dot{width:10px;height:10px;border-radius:50%;background:var(--mute)}
+#dot.on{background:var(--ok)}#dot.off{background:var(--bad)}
+.ib{border:0;background:none;color:var(--ink);font-size:22px;width:40px;height:40px;border-radius:20px;display:grid;place-items:center}
+.ib:active{background:var(--key)}
+[hidden]{display:none!important}
+main{padding:0 16px 96px}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);z-index:6}
+nav button{flex:1;border:0;background:none;color:var(--mute);padding:8px 0 10px;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button svg{width:24px;height:24px}
+nav button.sel{color:var(--acc);font-weight:600}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0}
+.row{display:flex;align-items:center;gap:10px}
+.grow{flex:1;min-width:0}
+.t{font-weight:600}.s{color:var(--mute);font-size:13px}
+.ell{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list .card{margin:8px 0;cursor:pointer}
+.list .card:active{background:var(--key)}
+.btn{border:0;border-radius:12px;padding:12px 16px;font:inherit;font-weight:600;background:var(--key);color:var(--ink)}
+.btn.p{background:var(--acc);color:#fff}
+.btn.w{width:100%}
+.btn.sm{padding:8px 12px;font-size:13px}
+.btn:active{filter:brightness(.92)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
+.key{border:0;border-radius:16px;min-height:62px;padding:8px;background:var(--key);color:var(--ink);font:inherit;font-weight:600;font-size:14px;word-break:break-word}
+.key.pw{background:var(--acc);color:#fff}
+.key small{display:block;font-weight:400;font-size:11px;opacity:.7}
+.big{font-size:64px;font-weight:700;line-height:1.1}
+.key:active{transform:scale(.96)}
+input,select{width:100%;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:12px;font:inherit}
+label.f{display:block;margin:12px 0 4px;color:var(--mute);font-size:13px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 12px;font:inherit;font-size:13px}
+.chip.sel{background:var(--acc);border-color:var(--acc);color:#fff}
+.days{display:flex;gap:6px}.days .chip{flex:1;padding:8px 0;text-align:center}
+.empty{text-align:center;color:var(--mute);padding:36px 12px}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;background:var(--acc2);color:var(--acc);font-weight:600}
+.note{background:var(--acc2);border-radius:12px;padding:10px 12px;font-size:13px;margin:10px 0}
+#sheet{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:flex;align-items:flex-end}
+#sheet[hidden]{display:none}
+#sheet .body{background:var(--bg);width:100%;max-height:88vh;overflow:auto;border-radius:20px 20px 0 0;padding:8px 16px 24px}
+#sheet .grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:4px auto 10px}
+#sheet h2{font-size:18px;margin:4px 0 8px}
+#toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:30;max-width:90vw}
+#toast.show{opacity:1}#toast.err{background:var(--bad);color:#fff}
+.sw{position:relative;width:46px;height:28px;flex:none}
+.sw input{opacity:0;width:0;height:0}
+.sw span{position:absolute;inset:0;background:var(--line);border-radius:14px;transition:.2s}
+.sw span:before{content:"";position:absolute;width:22px;height:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.sw input:checked+span{background:var(--acc)}.sw input:checked+span:before{transform:translateX(18px)}
+.pulse{animation:pl 1.2s infinite}@keyframes pl{50%{opacity:.4}}
+.sticky{position:sticky;bottom:72px;margin-top:12px}
+</style>
+</head>
+<body>
+<header><button class="ib" id="back" hidden aria-label="Indietro">&#8592;</button><h1 id="title">Telecomandi</h1><button class="chip" id="tgt" hidden></button><span id="dot" title="Stato S18"></span><button class="ib" id="gear" aria-label="Impostazioni">&#9881;</button></header>
+<main id="view"></main>
+<nav>
+  <button data-tab="remotes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="3"/><circle cx="12" cy="7" r="1.5"/><path d="M10 12h.01M14 12h.01M10 16h.01M14 16h.01"/></svg>Telecomandi</button>
+  <button data-tab="library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM8 7h7"/></svg>Libreria</button>
+  <button data-tab="learn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12a7 7 0 0 1 14 0M8.5 12a3.5 3.5 0 0 1 7 0"/><circle cx="12" cy="12" r="1"/><path d="M12 13v8"/></svg>Impara</button>
+  <button data-tab="autos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg>Automazioni</button>
+</nav>
+<div id="sheet" hidden><div class="body"><div class="grab"></div><div id="sheetIn"></div></div></div>
+<div id="toast"></div>
+<script src="logic.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

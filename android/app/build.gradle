@@ -1,0 +1,14 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'it.casa.irremote'
+    compileSdk 36
+    defaultConfig {
+        applicationId 'it.casa.irremote'
+        minSdk 26
+        targetSdk 36
+        versionCode 1
+        versionName '1.0'
+    }
+    // library JSON is already compact; keep assets uncompressed-friendly defaults
+}

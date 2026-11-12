@@ -1,0 +1,51 @@
+From 030d062ff502e844e4c6dc3e59b660f3fe24eb94 Mon Sep 17 00:00:00 2001
+From: Alexprox7 <Alexprox7@users.noreply.github.com>
+Date: Thu, 12 Nov 2026 15:38:23 +0100
+Subject: [PATCH 2/6] IR: IRSendRaw @file reads timings from LittleFS
+
+Script lines (autoexec/exec) are limited to 255 chars, too short for an
+AC frame, so automations can store the timings in a file instead.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ src/driver/drv_ir.cpp | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/src/driver/drv_ir.cpp b/src/driver/drv_ir.cpp
+index 61db536..0f8e8d1 100644
+--- a/src/driver/drv_ir.cpp
++++ b/src/driver/drv_ir.cpp
+@@ -566,11 +566,30 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
+     return CMD_RES_ERROR;
+ }
+ 
++static commandResult_t IR_SendRaw_Text(const char *args);
++
+ // IRSendRaw [kHz] [mark space mark ...] - raw timings in microseconds, first value is a mark.
+ // Separators may be spaces or commas. Sends captures the protocol decoders can't (AC units, Flipper raw files).
++// IRSendRaw @file reads the same text from a LittleFS file (script lines are limited to 255 chars).
+ // Example: IRSendRaw 38 9000,4500,560,560,560,1690,560
+ extern "C" commandResult_t IR_SendRaw_Cmd(const void *context, const char *cmd, const char *args, int cmdFlags) {
+     if (!args || !*args) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
++    if (*args != '@') return IR_SendRaw_Text(args);
++    char fname[64];
++    strncpy(fname, args + 1, sizeof(fname) - 1);
++    fname[sizeof(fname) - 1] = 0;
++    for (char *e = fname; *e; e++) if (*e == ' ' || *e == '\r' || *e == '\n') { *e = 0; break; }
++    byte *data = LFS_ReadFile(fname);
++    if (!data) {
++        ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRSendRaw: cannot read %s", fname);
++        return CMD_RES_ERROR;
++    }
++    commandResult_t res = IR_SendRaw_Text((const char *)data);
++    free(data);
++    return res;
++}
++
++static commandResult_t IR_SendRaw_Text(const char *args) {
+     if (!pIRsend) {
+         ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRSendRaw: no IRSend pin/driver running");
+         return CMD_RES_ERROR;
+-- 
+2.54.0.windows.1
+

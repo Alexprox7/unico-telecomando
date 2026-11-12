@@ -1,0 +1,19 @@
+# build output
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+tools/__pycache__/
+tools/patterns.json
+
+# personal data / device backups (never publish)
+backup_s18/
+
+# binaries are published as GitHub Release assets, not in git
+*.apk
+firmware/OpenBK7231N_*/
+*.rbl
+
+.claude/
+.idea/
+*.iml

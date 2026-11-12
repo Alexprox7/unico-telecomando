@@ -1,0 +1,26 @@
+From 42c73454121c273820b04ad6c54ebe70cfd79881 Mon Sep 17 00:00:00 2001
+From: Alexprox7 <Alexprox7@users.noreply.github.com>
+Date: Thu, 12 Nov 2026 15:43:04 +0100
+Subject: [PATCH 3/6] IR: IRSendRaw accepts newlines between timings
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ src/driver/drv_ir.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/driver/drv_ir.cpp b/src/driver/drv_ir.cpp
+index 0f8e8d1..c41ef43 100644
+--- a/src/driver/drv_ir.cpp
++++ b/src/driver/drv_ir.cpp
+@@ -605,7 +605,7 @@ static commandResult_t IR_SendRaw_Text(const char *args) {
+     int n = 0;
+     bool isMark = true;
+     while (*p) {
+-        while (*p == ' ' || *p == ',' || *p == '\t') p++;
++        while (*p == ' ' || *p == ',' || *p == '\t' || *p == '\r' || *p == '\n') p++; // files may end with a newline
+         if (!*p) break;
+         char *start = p;
+         long us = strtol(p, &p, 10);
+-- 
+2.54.0.windows.1
+
